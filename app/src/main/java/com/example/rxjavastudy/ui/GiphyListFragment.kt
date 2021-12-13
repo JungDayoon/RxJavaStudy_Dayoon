@@ -1,4 +1,4 @@
-package com.example.rxjavastudy
+package com.example.rxjavastudy.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,13 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rxjavastudy.data.Giphy
 import com.example.rxjavastudy.databinding.FragmentGiphyListBinding
 
 class GiphyListFragment : Fragment() {
     private var _binding: FragmentGiphyListBinding? = null
     private val binding get() = _binding!!
 
-    private val giphyItemList = ArrayList<GiphyItem>()
+    private val giphyItemList = ArrayList<Giphy>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

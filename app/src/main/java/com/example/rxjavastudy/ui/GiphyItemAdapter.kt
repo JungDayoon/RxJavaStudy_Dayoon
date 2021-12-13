@@ -1,14 +1,14 @@
-package com.example.rxjavastudy
+package com.example.rxjavastudy.ui
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.rxjavastudy.data.Giphy
 import com.example.rxjavastudy.databinding.GiphyItemLayoutBinding
 
 class GiphyItemAdapter(
-    private val items: ArrayList<GiphyItem>
+    private val items: ArrayList<Giphy>
 ): RecyclerView.Adapter<GiphyItemAdapter.ViewHolder>() {
 
     inner class ViewHolder(
