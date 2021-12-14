@@ -4,9 +4,9 @@ data class Giphy (
     val type: String,
     val id: String,
     val slug: String,
-    val url: String
-//    val bitly_url: String,
-//    val embed_url: String,
+    val url: String,
+    val bitly_url: String,
+    val embed_url: String,
 //    val username: String,
 //    val source: String,
 //    val rating: String,

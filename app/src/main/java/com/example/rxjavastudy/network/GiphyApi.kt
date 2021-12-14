@@ -13,5 +13,5 @@ interface GiphyApi {
         @Query("tag") tag: String?,
         @Query("rating") rating: String?,
         @Query("random_id") randomId: String?
-    ): Single<Response<Giphy>>
+    ): Single<Response<GiphyRandomResponse>>
 }

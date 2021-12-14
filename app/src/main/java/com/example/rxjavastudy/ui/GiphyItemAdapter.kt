@@ -1,5 +1,6 @@
 package com.example.rxjavastudy.ui
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -7,17 +8,16 @@ import com.bumptech.glide.Glide
 import com.example.rxjavastudy.data.Giphy
 import com.example.rxjavastudy.databinding.GiphyItemLayoutBinding
 
-class GiphyItemAdapter(
-    private val items: ArrayList<Giphy>
-): RecyclerView.Adapter<GiphyItemAdapter.ViewHolder>() {
+class GiphyItemAdapter : RecyclerView.Adapter<GiphyItemAdapter.ViewHolder>() {
+    val giphyList: ArrayList<Giphy?> = arrayListOf()
 
     inner class ViewHolder(
         private val binding: GiphyItemLayoutBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
-            Glide.with(binding.root)
-                .load(items[position].url)
-                .into(binding.giphyImage)
+//            Glide.with(binding.root)
+//                .load(giphyList[position]?.embed_url)
+//                .into(binding.giphyImage)
         }
     }
 
@@ -31,6 +31,12 @@ class GiphyItemAdapter(
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return giphyList.size
+    }
+
+    fun bindData(item: Giphy?) {
+        giphyList.add(item)
+        Log.d("giphyTest", "adapter giphyList size: $itemCount")
+        notifyDataSetChanged()
     }
 }

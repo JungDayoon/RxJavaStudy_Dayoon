@@ -1,11 +1,12 @@
 package com.example.rxjavastudy
 
 import android.app.Application
-import com.example.rxjavastudy.di.AppModule
-import com.example.rxjavastudy.di.DaggerAppComponent
+import com.example.rxjavastudy.di.app.AppComponent
+import com.example.rxjavastudy.di.app.AppModule
+import com.example.rxjavastudy.di.app.DaggerAppComponent
 
 class MainApplication: Application() {
-    val appComponent by lazy {
+    val appComponent: AppComponent by lazy {
         DaggerAppComponent.builder()
             .appModule(AppModule(this))
             .build()

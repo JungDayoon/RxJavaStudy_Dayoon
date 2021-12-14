@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GiphyApiClient @Inject constructor (
     private val giphyApi: GiphyApi
 ) {
-    fun getRandomGiphy(): Single<Response<Giphy>> {
+    fun getRandomGiphy(): Single<Response<GiphyRandomResponse>> {
         return giphyApi.getRandomGif(Constants.apiKey, null, null, null)
     }
 }
