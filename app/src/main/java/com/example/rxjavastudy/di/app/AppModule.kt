@@ -1,4 +1,4 @@
-package com.example.rxjavastudy.di
+package com.example.rxjavastudy.di.app
 
 import android.app.Application
 import com.example.rxjavastudy.Constants
