@@ -15,9 +15,11 @@ class GiphyItemAdapter : RecyclerView.Adapter<GiphyItemAdapter.ViewHolder>() {
         private val binding: GiphyItemLayoutBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
-//            Glide.with(binding.root)
-//                .load(giphyList[position]?.embed_url)
-//                .into(binding.giphyImage)
+            Log.d("giphyTest", "url: ${giphyList[position]?.images?.fixed_height?.url}")
+            Glide.with(binding.root)
+                .asGif()
+                .load(giphyList[position]?.images?.fixed_height?.url)
+                .into(binding.giphyImage)
         }
     }
 
@@ -37,6 +39,6 @@ class GiphyItemAdapter : RecyclerView.Adapter<GiphyItemAdapter.ViewHolder>() {
     fun bindData(item: Giphy?) {
         giphyList.add(item)
         Log.d("giphyTest", "adapter giphyList size: $itemCount")
-        notifyDataSetChanged()
+        notifyItemInserted(giphyList.size - 1)
     }
 }

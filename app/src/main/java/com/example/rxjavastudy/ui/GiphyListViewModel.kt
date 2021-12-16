@@ -15,14 +15,10 @@ class GiphyListViewModel @Inject constructor(
     private val _randomGiphy: MutableLiveData<Giphy?> = MutableLiveData()
     val randomGiphy get() = _randomGiphy
 
-    fun fetchRandomGiphyList() {
-        for (index in 0 until 10) {
-            getRandomGiphy()
-        }
-    }
+    private var giphyCount = 0
 
-    private fun getRandomGiphy() {
-        Log.d("giphyTest", "getRandomGiphy called")
+    fun getRandomGiphy() {
+        Log.d("giphyTest", "getRandomGiphy called count: $giphyCount")
         giphyApiClient.getRandomGiphy()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -32,6 +28,10 @@ class GiphyListViewModel @Inject constructor(
                     return@doOnSuccess
                 }
                 _randomGiphy.postValue(response.body()?.data)
+                if (giphyCount < maxCount) {
+                    giphyCount += 1
+                    getRandomGiphy()
+                }
             }
             .doOnError {
                 Log.e(TAG, "getRandomGiphy error: response is not successful or response.body is null")
@@ -41,5 +41,6 @@ class GiphyListViewModel @Inject constructor(
 
     companion object {
         val TAG = GiphyListViewModel.javaClass.name
+        const val maxCount = 10
     }
 }

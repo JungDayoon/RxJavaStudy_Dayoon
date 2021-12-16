@@ -31,7 +31,7 @@ class GiphyListFragment : Fragment() {
         super.onCreate(savedInstanceState)
         presentationComponent.inject(this)
 
-        viewModel.fetchRandomGiphyList()
+        viewModel.getRandomGiphy()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
