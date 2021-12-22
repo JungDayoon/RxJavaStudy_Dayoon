@@ -1,6 +1,7 @@
 package com.example.rxjavastudy.ui
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.rxjavastudy.data.Giphy
@@ -13,24 +14,23 @@ class GiphyListViewModel @Inject constructor(
     private val giphyApiClient: GiphyApiClient
 ): ViewModel() {
     private val _randomGiphy: MutableLiveData<Giphy?> = MutableLiveData()
-    val randomGiphy get() = _randomGiphy
+    val randomGiphy: LiveData<Giphy?> get() = _randomGiphy
+
+    val complete: MutableLiveData<Boolean> = MutableLiveData(false)
 
     private var giphyCount = 0
 
     fun getRandomGiphy() {
-        Log.d("giphyTest", "getRandomGiphy called count: $giphyCount")
         giphyApiClient.getRandomGiphy()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess { response ->
-                if (!response.isSuccessful || response.body() == null) {
-                    Log.e(TAG, "getRandomGiphy error: response is not successful or response.body is null")
-                    return@doOnSuccess
-                }
-                _randomGiphy.postValue(response.body()?.data)
+                _randomGiphy.postValue(response.data)
                 if (giphyCount < maxCount) {
                     giphyCount += 1
                     getRandomGiphy()
+                } else {
+                    complete.postValue(true)
                 }
             }
             .doOnError {
@@ -38,6 +38,7 @@ class GiphyListViewModel @Inject constructor(
             }
             .subscribe()
     }
+
 
     companion object {
         val TAG = GiphyListViewModel.javaClass.name

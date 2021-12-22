@@ -33,6 +33,10 @@ android {
     buildFeatures {
         // 뷰 바인딩 활성화
         viewBinding true
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.0.5'
     }
 }
 
@@ -62,4 +66,24 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
     implementation "com.squareup.retrofit2:adapter-rxjava2:2.9.0"
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+
+    // Integration with activities
+    implementation 'androidx.activity:activity-compose:1.4.0'
+    // Compose Material Design
+    implementation 'androidx.compose.material:material:1.0.5'
+    // Animations
+    implementation 'androidx.compose.animation:animation:1.0.5'
+    // Tooling support (Previews, etc.)
+    implementation 'androidx.compose.ui:ui-tooling:1.0.5'
+    // Integration with ViewModels
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0'
+    // UI Tests
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.0.5'
+
+    implementation "io.coil-kt:coil-compose:1.3.2"
+    implementation "io.coil-kt:coil-gif:1.4.0"
+
+    implementation "androidx.compose.runtime:runtime:1.1.0-rc01"
+    implementation "androidx.compose.runtime:runtime-livedata:1.1.0-rc01"
+    implementation "androidx.compose.runtime:runtime-rxjava2:1.1.0-rc01"
 }
