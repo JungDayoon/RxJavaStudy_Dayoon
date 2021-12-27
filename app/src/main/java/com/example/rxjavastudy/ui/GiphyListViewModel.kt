@@ -2,12 +2,11 @@ package com.example.rxjavastudy.ui
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.ViewModel
+import androidx.compose.runtime.mutableStateOf
 import com.example.rxjavastudy.data.Giphy
 import com.example.rxjavastudy.network.GiphyApiClient
 import com.example.rxjavastudy.ui.base.BaseViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
@@ -15,6 +14,9 @@ class GiphyListViewModel @Inject constructor(
     private val giphyApiClient: GiphyApiClient
 ): BaseViewModel() {
     val randomGiphyList = mutableStateListOf<Giphy?>()
+
+    val radioOptions = listOf(SEARCH_MODE_THROTTLING, SEARCH_MODE_DEBOUNCING)
+    val searchMode = mutableStateOf(radioOptions[0])
 
     fun getRandomGiphy(count: Long) {
         disposeBag.add(giphyApiClient.getRandomGiphy()
@@ -35,5 +37,8 @@ class GiphyListViewModel @Inject constructor(
 
     companion object {
         val TAG = GiphyListViewModel.toString()
+
+        private const val SEARCH_MODE_THROTTLING = "T"
+        private const val SEARCH_MODE_DEBOUNCING = "D"
     }
 }
