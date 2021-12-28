@@ -7,12 +7,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import coil.ImageLoader
 import coil.compose.rememberImagePainter
+import com.example.rxjavastudy.Constants
 import com.example.rxjavastudy.di.viewmodel.ViewModelFactory
 import com.example.rxjavastudy.ui.base.BaseActivity
 import javax.inject.Inject
@@ -53,6 +52,16 @@ class GiphyListActivity : BaseActivity() {
 
     private fun initViewModel() {
         viewModel.getRandomGiphy(GIPHY_COUNT)
+        viewModel.searchQuery.observe(this) {
+            when (viewModel.searchMode.value) {
+                Constants.SEARCH_MODE_THROTTLING -> {
+
+                }
+                Constants.SEARCH_MODE_DEBOUNCING -> {
+
+                }
+            }
+        }
     }
 
     @ExperimentalFoundationApi
@@ -75,15 +84,13 @@ class GiphyListActivity : BaseActivity() {
     @InternalTextApi
     @Composable
     fun SearchQueryInputComponent() {
-        val text = remember { mutableStateOf("") }
-
         TextField(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth(),
-            value = text.value,
+            value = viewModel.searchQuery.observeAsState().value.orEmpty(),
             onValueChange = {
-                text.value = it
+                viewModel.searchQuery.value = it
             },
             label = {
                 Text("Search Query")
@@ -93,33 +100,21 @@ class GiphyListActivity : BaseActivity() {
 
     @Composable
     fun RadioButtonGroupComponent() {
-        val selected = remember { mutableStateOf(viewModel.radioOptions[0]) }
-
         Card(
             shape = RoundedCornerShape(4.dp),
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth()
         ) {
-            val onSelectedChange = { text: String ->
-                selected.value = text
-            }
             Column {
                 viewModel.radioOptions.forEach { text ->
                     Row(Modifier
                         .fillMaxWidth()
-                        .selectable(
-                            selected = (text == selected.value),
-                            onClick = {
-                                onSelectedChange(text)
-                                viewModel.searchMode.value = text
-                            }
-                        )
                         .padding(horizontal = 16.dp)
                     ) {
                         RadioButton(
-                            selected = (text == selected.value),
-                            onClick = { onSelectedChange(text) }
+                            selected = (text == viewModel.searchMode.value),
+                            onClick = { viewModel.searchMode.value = text }
                         )
                         Text(
                             text = text,

@@ -1,6 +1,6 @@
 package com.example.rxjavastudy.data
 
-data class Giphy (
+data class Gif (
     val type: String,
     val id: String,
     val slug: String,

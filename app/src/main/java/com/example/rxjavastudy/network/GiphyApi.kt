@@ -1,8 +1,6 @@
 package com.example.rxjavastudy.network
 
-import com.example.rxjavastudy.data.Giphy
 import io.reactivex.Single
-import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -14,4 +12,10 @@ interface GiphyApi {
         @Query("rating") rating: String?,
         @Query("random_id") randomId: String?
     ): Single<GiphyRandomResponse>
+
+    @GET("/v1/gifs/search")
+    fun getSearchGifList(
+        @Query("api_key") apiKey: String,
+        @Query("q") query: String
+    ): Single<GiphySearchResponse>
 }
