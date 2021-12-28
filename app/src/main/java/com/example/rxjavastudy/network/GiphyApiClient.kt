@@ -11,8 +11,8 @@ class GiphyApiClient @Inject constructor (
         return giphyApi.getRandomGif(Constants.apiKey, null, null, null)
     }
 
-    fun getSearchGiphyList(searchQuery: String): Single<GiphySearchResponse> {
-        return giphyApi.getSearchGifList(Constants.apiKey, searchQuery)
+    fun getSearchGiphyList(searchQuery: String, limit: Int): Single<GiphySearchResponse> {
+        return giphyApi.getSearchGifList(Constants.apiKey, searchQuery, limit)
     }
 }
 

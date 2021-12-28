@@ -16,6 +16,7 @@ interface GiphyApi {
     @GET("/v1/gifs/search")
     fun getSearchGifList(
         @Query("api_key") apiKey: String,
-        @Query("q") query: String
+        @Query("q") query: String,
+        @Query("limit") limit: Int,
     ): Single<GiphySearchResponse>
 }

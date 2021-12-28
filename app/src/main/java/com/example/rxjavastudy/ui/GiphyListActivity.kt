@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import coil.ImageLoader
 import coil.compose.rememberImagePainter
 import com.example.rxjavastudy.Constants
+import com.example.rxjavastudy.R
 import com.example.rxjavastudy.di.viewmodel.ViewModelFactory
 import com.example.rxjavastudy.ui.base.BaseActivity
 import javax.inject.Inject
@@ -55,10 +56,10 @@ class GiphyListActivity : BaseActivity() {
         viewModel.searchQuery.observe(this) {
             when (viewModel.searchMode.value) {
                 Constants.SEARCH_MODE_THROTTLING -> {
-
+                    viewModel.throttlingSubject.onNext(it)
                 }
                 Constants.SEARCH_MODE_DEBOUNCING -> {
-
+                    viewModel.debouncingSubject.onNext(it)
                 }
             }
         }
@@ -73,9 +74,15 @@ class GiphyListActivity : BaseActivity() {
         ) {
             items(giphyList.size) {
                 Image(
-                    painter = rememberImagePainter(data = giphyList[it]?.images?.fixed_height?.url, imageLoader = imageLoader),
+                    painter = rememberImagePainter(
+                        data = giphyList[it]?.images?.fixed_height?.url,
+                        imageLoader = imageLoader,
+                        builder = {
+                            placeholder(R.drawable.loading_icon)
+                        }
+                    ),
                     contentDescription = null,
-                    modifier = Modifier.size(128.dp)
+                    modifier = Modifier.size(128.dp),
                 )
             }
         }
