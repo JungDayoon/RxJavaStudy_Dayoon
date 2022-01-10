@@ -30,7 +30,7 @@ class GiphyListViewModel @Inject constructor(
 
     fun getRandomGiphy(count: Long) {
         randomGiphyList.clear()
-        disposeBag.add(giphyApiClient.getRandomGiphy()
+        disposeBag.addExclusive(giphyApiClient.getRandomGiphy()
             .repeat(count)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -45,9 +45,9 @@ class GiphyListViewModel @Inject constructor(
             ))
     }
 
-    fun getSearchGiphyList(searchQuery: String, count: Int) {
+    private fun getSearchGiphyList(searchQuery: String, count: Int) {
         randomGiphyList.clear()
-        disposeBag.add(giphyApiClient.getSearchGiphyList(searchQuery, count)
+        disposeBag.addExclusive(giphyApiClient.getSearchGiphyList(searchQuery, count)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
@@ -62,38 +62,42 @@ class GiphyListViewModel @Inject constructor(
     }
 
     init {
-        throttlingSubject
-            .throttleLast(1000L, TimeUnit.MILLISECONDS)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext {
-                Log.d(TAG, "throttling text: $it")
-            }
-            .subscribe {
-                if (it.isBlank()) {
-                    getRandomGiphy(20)
-                } else {
-                    getSearchGiphyList(it, 20)
+        disposeBag.add(
+            throttlingSubject
+                .throttleLast(1000L, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext {
+                    Log.d(TAG, "throttling text: $it")
                 }
-            }
+                .subscribe {
+                    if (it.isBlank()) {
+                        getRandomGiphy(20)
+                    } else {
+                        getSearchGiphyList(it, 20)
+                    }
+                }
+        )
 
-        debouncingSubject
-            .debounce(1000L, TimeUnit.MILLISECONDS)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext {
-                Log.d(TAG, "debouncing text: $it")
-            }
-            .subscribe {
-                if (it.isBlank()) {
-                    getRandomGiphy(20)
-                } else {
-                    getSearchGiphyList(it, 20)
+        disposeBag.add(
+            debouncingSubject
+                .debounce(1000L, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext {
+                    Log.d(TAG, "debouncing text: $it")
                 }
-            }
+                .subscribe {
+                    if (it.isBlank()) {
+                        getRandomGiphy(20)
+                    } else {
+                        getSearchGiphyList(it, 20)
+                    }
+                }
+        )
     }
 
     companion object {
-        val TAG = GiphyListViewModel.javaClass.name
+        val TAG = GiphyListViewModel::class.java.name
     }
 }
