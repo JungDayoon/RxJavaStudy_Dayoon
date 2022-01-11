@@ -3,22 +3,25 @@ package com.example.rxjavastudy.ui
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.rxjavastudy.data.Giphy
+import com.example.rxjavastudy.R
+import com.example.rxjavastudy.data.Gif
 import com.example.rxjavastudy.databinding.GiphyItemLayoutBinding
 
-class GiphyItemAdapter : RecyclerView.Adapter<GiphyItemAdapter.ViewHolder>() {
-    val giphyList: ArrayList<Giphy?> = arrayListOf()
-
+class GiphyItemAdapter : ListAdapter<Gif, GiphyItemAdapter.ViewHolder>(diffUtil) {
     inner class ViewHolder(
         private val binding: GiphyItemLayoutBinding
     ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(position: Int) {
-            Log.d("giphyTest", "url: ${giphyList[position]?.images?.fixed_height?.url}")
+
+        fun bind(item: Gif?) {
+            Log.d("giphyTest", "url: ${item?.images?.fixed_height?.url}")
             Glide.with(binding.root)
                 .asGif()
-                .load(giphyList[position]?.images?.fixed_height?.url)
+                .placeholder(R.drawable.loading_icon)
+                .load(item?.images?.fixed_height?.url)
                 .into(binding.giphyImage)
         }
     }
@@ -29,16 +32,16 @@ class GiphyItemAdapter : RecyclerView.Adapter<GiphyItemAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(position)
+        holder.bind(getItem(position))
     }
 
-    override fun getItemCount(): Int {
-        return giphyList.size
-    }
+    companion object {
+        val diffUtil = object : DiffUtil.ItemCallback<Gif>() {
+            override fun areContentsTheSame(oldItem: Gif, newItem: Gif) =
+                oldItem == newItem
 
-    fun bindData(item: Giphy?) {
-        giphyList.add(item)
-        Log.d("giphyTest", "adapter giphyList size: $itemCount")
-        notifyItemInserted(giphyList.size - 1)
+            override fun areItemsTheSame(oldItem: Gif, newItem: Gif) =
+                oldItem.id == newItem.id
+        }
     }
 }

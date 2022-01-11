@@ -4,17 +4,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.rxjavastudy.databinding.FragmentGiphyListBinding
 import com.example.rxjavastudy.di.viewmodel.ViewModelFactory
+import com.example.rxjavastudy.ui.SearchModeType.DEBOUNCE
+import com.example.rxjavastudy.ui.SearchModeType.THROTTLE
 import javax.inject.Inject
 
 class GiphyListFragment : Fragment() {
     @Inject lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel: GiphyListViewModel by lazy {
+    private val viewModel by lazy {
         ViewModelProvider(this, viewModelFactory).get(GiphyListViewModel::class.java)
     }
 
@@ -31,7 +35,7 @@ class GiphyListFragment : Fragment() {
         super.onCreate(savedInstanceState)
         presentationComponent.inject(this)
 
-        viewModel.getRandomGiphy()
+        viewModel.getRandomGiphy(LOAD_COUNT.toLong())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -39,6 +43,7 @@ class GiphyListFragment : Fragment() {
         initView()
         initViewModel()
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -54,19 +59,57 @@ class GiphyListFragment : Fragment() {
     }
 
     private fun initView() {
-        val gridLayoutManager = GridLayoutManager(context, 3)
+        binding.searchEditText.doOnTextChanged { text, start, before, count ->
+            when (viewModel.searchMode.value) {
+                THROTTLE -> {
+                    viewModel.throttlingSubject.onNext(text.toString())
+                }
+                DEBOUNCE -> {
+                    viewModel.debouncingSubject.onNext(text.toString())
+                }
+            }
+        }
+
+        binding.searchToggle.setOnClickListener {
+            viewModel.searchMode.postValue(viewModel.searchMode.value?.toggle())
+        }
+
+        binding.giphyListView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                val lastVisibleLine = (layoutManager.findLastVisibleItemPosition() + 1) / COLUMN_NUM
+                val itemTotalLine = adapter.itemCount / COLUMN_NUM
+
+                val searchText = binding.searchEditText.text.toString()
+
+                if (searchText.isNotBlank() && lastVisibleLine == (itemTotalLine - SCROLL_LINE_OFFSET)) {
+                    viewModel.getSearchGiphyList(searchText, LOAD_COUNT)
+                }
+            }
+        })
+
+        val gridLayoutManager = GridLayoutManager(context, COLUMN_NUM)
         adapter = GiphyItemAdapter()
         binding.giphyListView.adapter = adapter
         binding.giphyListView.layoutManager = gridLayoutManager
     }
 
     private fun initViewModel() {
-        viewModel.randomGiphy.observe(viewLifecycleOwner, {
-            adapter.bindData(it)
-        })
+        viewModel.giphyListLiveData.observe(viewLifecycleOwner) {
+            adapter.submitList(it.toMutableList())
+        }
+
+        viewModel.searchMode.observe(viewLifecycleOwner) {
+            binding.searchToggle.text = it.text
+        }
     }
 
     companion object {
+        private const val COLUMN_NUM = 3
+        private const val SCROLL_LINE_OFFSET = 2
+        const val LOAD_COUNT = 30
         fun newInstance(): GiphyListFragment {
             return GiphyListFragment()
         }
