@@ -1,10 +1,10 @@
 package com.example.rxjavastudy.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
@@ -13,6 +13,8 @@ import com.example.rxjavastudy.databinding.FragmentGiphyListBinding
 import com.example.rxjavastudy.di.viewmodel.ViewModelFactory
 import com.example.rxjavastudy.ui.SearchModeType.DEBOUNCE
 import com.example.rxjavastudy.ui.SearchModeType.THROTTLE
+import com.jakewharton.rxbinding3.view.clicks
+import com.jakewharton.rxbinding3.widget.textChanges
 import javax.inject.Inject
 
 class GiphyListFragment : Fragment() {
@@ -58,22 +60,40 @@ class GiphyListFragment : Fragment() {
         _binding = null
     }
 
+    @SuppressLint("CheckResult")
     private fun initView() {
-        binding.searchEditText.doOnTextChanged { text, start, before, count ->
-            when (viewModel.searchMode.value) {
-                THROTTLE -> {
-                    viewModel.throttlingSubject.onNext(text.toString())
-                }
-                DEBOUNCE -> {
-                    viewModel.debouncingSubject.onNext(text.toString())
+        binding.searchEditText
+            .textChanges()
+            .subscribe {
+                when (viewModel.searchMode.value) {
+                    THROTTLE -> {
+                        viewModel.throttlingSubject.onNext(it.toString())
+                    }
+                    DEBOUNCE -> {
+                        viewModel.debouncingSubject.onNext(it.toString())
+                    }
                 }
             }
-        }
 
-        binding.searchToggle.setOnClickListener {
-            viewModel.searchMode.postValue(viewModel.searchMode.value?.toggle())
-        }
+        binding.searchToggle
+            .clicks()
+            .subscribe {
+                viewModel.searchMode.postValue(viewModel.searchMode.value?.toggle())
+            }
 
+//        binding.giphyListView
+//            .scrollChangeEvents()
+//            .subscribe {
+//                val layoutManager = binding.giphyListView.layoutManager as GridLayoutManager
+//                val lastVisibleLine = (layoutManager.findLastVisibleItemPosition() + 1) / COLUMN_NUM
+//                val itemTotalLine = adapter.itemCount / COLUMN_NUM
+//
+//                val searchText = binding.searchEditText.text.toString()
+//
+//                if (searchText.isNotBlank() && lastVisibleLine == (itemTotalLine - SCROLL_LINE_OFFSET)) {
+//                    viewModel.getSearchGiphyList(searchText, LOAD_COUNT)
+//                }
+//            }
         binding.giphyListView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
