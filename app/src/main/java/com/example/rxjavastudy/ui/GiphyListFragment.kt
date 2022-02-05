@@ -97,6 +97,7 @@ class GiphyListFragment : Fragment() {
     }
 
     private fun initViewModel() {
+        viewModel.initSubject()
         viewModel.giphyListLiveData.observe(viewLifecycleOwner) {
             adapter.submitList(it.toMutableList())
         }
