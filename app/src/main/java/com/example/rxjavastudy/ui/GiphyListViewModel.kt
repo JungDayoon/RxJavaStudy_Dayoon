@@ -25,6 +25,8 @@ class GiphyListViewModel @Inject constructor(
     val throttlingSubject: BehaviorSubject<String> = BehaviorSubject.create()
     val debouncingSubject: BehaviorSubject<String> = BehaviorSubject.create()
 
+    var searchQuery: String? = null
+
     fun getRandomGiphy(count: Long) {
         disposeBag.addExclusive(giphyApiClient.getRandomGiphy()
             .repeat(count)
@@ -56,12 +58,12 @@ class GiphyListViewModel @Inject constructor(
             ))
     }
 
-    private fun clearGiphyList() {
+    fun clearGiphyList() {
         giphyList.clear()
         giphyListLiveData.value = giphyList
     }
 
-    init {
+    fun initSubject() {
         disposeBag.add(
             throttlingSubject
                 .throttleLast(1000L, TimeUnit.MILLISECONDS)
@@ -70,15 +72,21 @@ class GiphyListViewModel @Inject constructor(
                 .doOnNext {
                     Log.d(TAG, "throttling text: $it")
                 }
-                .subscribe {
-                    clearGiphyList()
+                .subscribe(
+                    {
+                        searchQuery = it
+                        clearGiphyList()
 
-                    if (it.isBlank()) {
-                        getRandomGiphy(LOAD_COUNT.toLong())
-                    } else {
-                        getSearchGiphyList(it, LOAD_COUNT)
+                        if (it.isBlank()) {
+                            getRandomGiphy(LOAD_COUNT.toLong())
+                        } else {
+                            getSearchGiphyList(it, LOAD_COUNT)
+                        }
+                    },
+                    {
+                        Log.e(TAG, "throttling error")
                     }
-                }
+                )
         )
 
         disposeBag.add(
@@ -89,15 +97,20 @@ class GiphyListViewModel @Inject constructor(
                 .doOnNext {
                     Log.d(TAG, "debouncing text: $it")
                 }
-                .subscribe {
-                    clearGiphyList()
+                .subscribe(
+                    {
+                        searchQuery = it
+                        clearGiphyList()
 
-                    if (it.isBlank()) {
-                        getRandomGiphy(LOAD_COUNT.toLong())
-                    } else {
-                        getSearchGiphyList(it, LOAD_COUNT)
-                    }
-                }
+                        if (it.isBlank()) {
+                            getRandomGiphy(LOAD_COUNT.toLong())
+                        } else {
+                            getSearchGiphyList(it, LOAD_COUNT)
+                        }
+                    },
+                    {
+                        Log.e(TAG, "debouncing error")
+                    })
         )
     }
 
