@@ -1,7 +1,7 @@
 package com.example.rxjavastudy.data
 
 data class ImageFixedHeight(
-    val url: String,
+    var url: String,
     val width: String,
     val height: String,
     val size: String,

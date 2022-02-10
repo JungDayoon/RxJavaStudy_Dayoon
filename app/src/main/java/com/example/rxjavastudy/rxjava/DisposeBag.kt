@@ -56,6 +56,12 @@ class DisposeBag : LifecycleObserver {
     }
 
     private fun registerExclusiveDisposable(disposable: Disposable, tag: String) {
+        disposeExclusiveDisposable(tag)
+        exclusiveDisposableMap[tag] = disposable
+        compositeDisposable.add(disposable)
+    }
+
+    fun disposeExclusiveDisposable(tag: String) {
         if (exclusiveDisposableMap.containsKey(tag)) {
             val prevDisposable = exclusiveDisposableMap.remove(tag)
             compositeDisposable.remove(prevDisposable!!)
@@ -63,8 +69,6 @@ class DisposeBag : LifecycleObserver {
                 prevDisposable.dispose()
             }
         }
-        exclusiveDisposableMap[tag] = disposable
-        compositeDisposable.add(disposable)
     }
 
     companion object {

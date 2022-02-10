@@ -2,6 +2,8 @@ package com.example.rxjavastudy.ui
 
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -12,6 +14,7 @@ import com.example.rxjavastudy.data.Gif
 import com.example.rxjavastudy.databinding.GiphyItemLayoutBinding
 
 class GiphyItemAdapter : ListAdapter<Gif, GiphyItemAdapter.ViewHolder>(diffUtil) {
+    lateinit var blinkIndexList: List<Int>
     inner class ViewHolder(
         private val binding: GiphyItemLayoutBinding
     ): RecyclerView.ViewHolder(binding.root) {
@@ -33,6 +36,15 @@ class GiphyItemAdapter : ListAdapter<Gif, GiphyItemAdapter.ViewHolder>(diffUtil)
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
+        if (blinkIndexList.isNotEmpty()) {
+            if (blinkIndexList.contains(position)) {
+                holder.itemView.visibility = GONE
+            } else {
+                holder.itemView.visibility = VISIBLE
+            }
+        } else {
+            holder.itemView.visibility = VISIBLE
+        }
     }
 
     companion object {

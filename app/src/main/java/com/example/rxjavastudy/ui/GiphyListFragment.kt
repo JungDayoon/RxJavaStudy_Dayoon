@@ -2,18 +2,19 @@ package com.example.rxjavastudy.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.rxjavastudy.databinding.FragmentGiphyListBinding
 import com.example.rxjavastudy.di.viewmodel.ViewModelFactory
 import com.example.rxjavastudy.ui.SearchModeType.DEBOUNCE
 import com.example.rxjavastudy.ui.SearchModeType.THROTTLE
 import com.jakewharton.rxbinding3.view.clicks
+import com.jakewharton.rxbinding3.view.scrollChangeEvents
 import com.jakewharton.rxbinding3.widget.textChanges
 import javax.inject.Inject
 
@@ -81,24 +82,10 @@ class GiphyListFragment : Fragment() {
                 viewModel.searchMode.postValue(viewModel.searchMode.value?.toggle())
             }
 
-//        binding.giphyListView
-//            .scrollChangeEvents()
-//            .subscribe {
-//                val layoutManager = binding.giphyListView.layoutManager as GridLayoutManager
-//                val lastVisibleLine = (layoutManager.findLastVisibleItemPosition() + 1) / COLUMN_NUM
-//                val itemTotalLine = adapter.itemCount / COLUMN_NUM
-//
-//                val searchText = binding.searchEditText.text.toString()
-//
-//                if (searchText.isNotBlank() && lastVisibleLine == (itemTotalLine - SCROLL_LINE_OFFSET)) {
-//                    viewModel.getSearchGiphyList(searchText, LOAD_COUNT)
-//                }
-//            }
-        binding.giphyListView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-
-                val layoutManager = recyclerView.layoutManager as GridLayoutManager
+        binding.giphyListView
+            .scrollChangeEvents()
+            .subscribe {
+                val layoutManager = binding.giphyListView.layoutManager as GridLayoutManager
                 val lastVisibleLine = (layoutManager.findLastVisibleItemPosition() + 1) / COLUMN_NUM
                 val itemTotalLine = adapter.itemCount / COLUMN_NUM
 
@@ -108,7 +95,6 @@ class GiphyListFragment : Fragment() {
                     viewModel.getSearchGiphyList(searchText, LOAD_COUNT)
                 }
             }
-        })
 
         val gridLayoutManager = GridLayoutManager(context, COLUMN_NUM)
         adapter = GiphyItemAdapter()
@@ -124,6 +110,11 @@ class GiphyListFragment : Fragment() {
 
         viewModel.searchMode.observe(viewLifecycleOwner) {
             binding.searchToggle.text = it.text
+        }
+
+        viewModel.blinkListLiveData.observe(viewLifecycleOwner) {
+            adapter.blinkIndexList = it
+            adapter.notifyDataSetChanged()
         }
     }
 
