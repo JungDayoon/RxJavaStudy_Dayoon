@@ -20,4 +20,12 @@ interface GiphyApi {
         @Query("limit") limit: Int,
         @Query("offset") offset: Int
     ): Single<GiphySearchResponse>
+
+    @GET("/v1/gifs/search/tags")
+    fun getAutoCompleteList(
+        @Query("api_key") apiKey: String,
+        @Query("q") query: String,
+        @Query("limit") limit: Int,
+        @Query("offset") offset: Int
+    ): Single<GiphyAutoCompleteResponse>
 }

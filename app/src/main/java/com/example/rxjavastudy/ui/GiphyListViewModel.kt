@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.rxjavastudy.data.Gif
+import com.example.rxjavastudy.data.Term
 import com.example.rxjavastudy.network.GiphyApiClient
 import com.example.rxjavastudy.ui.GiphyListFragment.Companion.LOAD_COUNT
 import com.example.rxjavastudy.ui.base.BaseViewModel
@@ -28,6 +29,9 @@ class GiphyListViewModel @Inject constructor(
     val debouncingSubject: BehaviorSubject<String> = BehaviorSubject.create()
 
     var searchQuery: String? = null
+
+    val autoCompleteListLiveData: MutableLiveData<List<Term>> = MutableLiveData(listOf())
+    val isSelectKeyword: MutableLiveData<Boolean> = MutableLiveData(false)
 
     fun getRandomGiphy(count: Long) {
         blinkListLiveData.value = listOf()
@@ -97,6 +101,21 @@ class GiphyListViewModel @Inject constructor(
         return indexList.subList(0, randomKey)
     }
 
+    private fun getAutoCompleteList(term: String) {
+        disposeBag.addExclusive(giphyApiClient.getGiphyAutoCompleteList(term, 5, 0)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe (
+                { response ->
+                    autoCompleteListLiveData.value = response.data
+                },
+                {
+                    Log.e(TAG, "getAutoCompleteList error: response is not successful or response.body is null")
+                }
+            )
+        )
+    }
+
     fun initSubject() {
         disposeBag.add(
             throttlingSubject
@@ -111,10 +130,13 @@ class GiphyListViewModel @Inject constructor(
                         searchQuery = it
                         clearGiphyList()
 
-                        if (it.isBlank()) {
+                        if (isSelectKeyword.value == true) {
+                            getSearchGiphyList(it, LOAD_COUNT)
+                        } else if (it.isBlank()) {
                             getRandomGiphy(LOAD_COUNT.toLong())
                         } else {
-                            getSearchGiphyList(it, LOAD_COUNT)
+                            getAutoCompleteList(it)
+                            isSelectKeyword.value = false
                         }
                     },
                     {
@@ -136,10 +158,13 @@ class GiphyListViewModel @Inject constructor(
                         searchQuery = it
                         clearGiphyList()
 
-                        if (it.isBlank()) {
+                        if (isSelectKeyword.value == true) {
+                            getSearchGiphyList(it, LOAD_COUNT)
+                        } else if (it.isBlank()) {
                             getRandomGiphy(LOAD_COUNT.toLong())
                         } else {
-                            getSearchGiphyList(it, LOAD_COUNT)
+                            isSelectKeyword.value = false
+                            getAutoCompleteList(it)
                         }
                     },
                     {

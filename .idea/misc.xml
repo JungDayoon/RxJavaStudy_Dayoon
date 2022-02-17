@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.14990942028985507" />
+        <entry key="app/src/main/res/layout/auto_complete_item_layout.xml" value="0.16767983789260385" />
         <entry key="app/src/main/res/layout/fragment_giphy_list.xml" value="0.24427083333333333" />
         <entry key="app/src/main/res/layout/giphy_item_layout.xml" value="0.24427083333333333" />
       </map>

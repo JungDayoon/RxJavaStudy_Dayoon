@@ -1,19 +1,24 @@
 package com.example.rxjavastudy.ui
 
 import android.annotation.SuppressLint
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rxjavastudy.databinding.FragmentGiphyListBinding
 import com.example.rxjavastudy.di.viewmodel.ViewModelFactory
 import com.example.rxjavastudy.ui.SearchModeType.DEBOUNCE
 import com.example.rxjavastudy.ui.SearchModeType.THROTTLE
 import com.jakewharton.rxbinding3.view.clicks
+import com.jakewharton.rxbinding3.view.focusChanges
 import com.jakewharton.rxbinding3.view.scrollChangeEvents
 import com.jakewharton.rxbinding3.widget.textChanges
 import javax.inject.Inject
@@ -32,7 +37,8 @@ class GiphyListFragment : Fragment() {
     private var _binding: FragmentGiphyListBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: GiphyItemAdapter
+    private lateinit var giphyItemAdapter: GiphyItemAdapter
+    private lateinit var autoCompleteItemAdapter: AutoCompleteItemAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +82,15 @@ class GiphyListFragment : Fragment() {
                 }
             }
 
+        binding.searchEditText
+            .focusChanges()
+            .subscribe {
+                if (it) {
+                    Log.d("test", "searchEditText focus on")
+                    viewModel.isSelectKeyword.value = false
+                }
+            }
+
         binding.searchToggle
             .clicks()
             .subscribe {
@@ -87,7 +102,7 @@ class GiphyListFragment : Fragment() {
             .subscribe {
                 val layoutManager = binding.giphyListView.layoutManager as GridLayoutManager
                 val lastVisibleLine = (layoutManager.findLastVisibleItemPosition() + 1) / COLUMN_NUM
-                val itemTotalLine = adapter.itemCount / COLUMN_NUM
+                val itemTotalLine = giphyItemAdapter.itemCount / COLUMN_NUM
 
                 val searchText = binding.searchEditText.text.toString()
 
@@ -96,16 +111,29 @@ class GiphyListFragment : Fragment() {
                 }
             }
 
-        val gridLayoutManager = GridLayoutManager(context, COLUMN_NUM)
-        adapter = GiphyItemAdapter()
-        binding.giphyListView.adapter = adapter
-        binding.giphyListView.layoutManager = gridLayoutManager
+        binding.searchComplete
+            .clicks()
+            .subscribe {
+                selectSearchKeyword(binding.searchEditText.text.toString())
+            }
+
+        giphyItemAdapter = GiphyItemAdapter()
+        binding.giphyListView.adapter = giphyItemAdapter
+        binding.giphyListView.layoutManager = GridLayoutManager(context, COLUMN_NUM)
+
+        val autoCompleteClickListener = View.OnClickListener {
+            val textView = it as TextView
+            selectSearchKeyword(textView.text.toString())
+        }
+        autoCompleteItemAdapter = AutoCompleteItemAdapter(autoCompleteClickListener)
+        binding.giphySearchAutoCompleteListView.adapter = autoCompleteItemAdapter
+        binding.giphySearchAutoCompleteListView.layoutManager = LinearLayoutManager(context)
     }
 
     private fun initViewModel() {
         viewModel.initSubject()
         viewModel.giphyListLiveData.observe(viewLifecycleOwner) {
-            adapter.submitList(it.toMutableList())
+            giphyItemAdapter.submitList(it.toMutableList())
         }
 
         viewModel.searchMode.observe(viewLifecycleOwner) {
@@ -113,9 +141,25 @@ class GiphyListFragment : Fragment() {
         }
 
         viewModel.blinkListLiveData.observe(viewLifecycleOwner) {
-            adapter.blinkIndexList = it
-            adapter.notifyDataSetChanged()
+            giphyItemAdapter.blinkIndexList = it
+            giphyItemAdapter.notifyDataSetChanged()
         }
+
+        viewModel.autoCompleteListLiveData.observe(viewLifecycleOwner) {
+            binding.giphySearchAutoCompleteListView.visibility = View.VISIBLE
+            autoCompleteItemAdapter.submitList(it)
+        }
+    }
+
+    private fun selectSearchKeyword(text: String) {
+        viewModel.isSelectKeyword.value = true
+        binding.searchEditText.setText(text)
+        binding.giphySearchAutoCompleteListView.visibility = View.GONE
+
+        val inputMethodManager = context?.getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager
+        inputMethodManager?.hideSoftInputFromWindow(binding.searchEditText.windowToken, 0)
+
+        binding.searchEditText.clearFocus()
     }
 
     companion object {

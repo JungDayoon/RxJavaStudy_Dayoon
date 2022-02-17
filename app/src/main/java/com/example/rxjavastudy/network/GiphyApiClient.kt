@@ -14,6 +14,10 @@ class GiphyApiClient @Inject constructor (
     fun getSearchGiphyList(searchQuery: String, limit: Int, offset: Int): Single<GiphySearchResponse> {
         return giphyApi.getSearchGifList(Constants.apiKey, searchQuery, limit, offset)
     }
+
+    fun getGiphyAutoCompleteList(term: String, limit: Int, offset: Int): Single<GiphyAutoCompleteResponse> {
+        return giphyApi.getAutoCompleteList(Constants.apiKey, term, limit, offset)
+    }
 }
 
 
